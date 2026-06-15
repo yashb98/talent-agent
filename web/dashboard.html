@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Talent Intelligence — Dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper:      #efe8d8;
+    --paper-2:    #e6ddc8;
+    --paper-3:    #ded3ba;
+    --ink:        #1b1813;
+    --ink-soft:   #5c5447;
+    --ink-faint:  #8a8273;
+    --signal:     #d4371a;
+    --signal-deep:#a02810;
+    --line:       rgba(27, 24, 19, 0.16);
+    --line-soft:  rgba(27, 24, 19, 0.08);
+
+    --font-display: "Instrument Serif", Georgia, serif;
+    --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+    --font-quote:   "Newsreader", Georgia, serif;
+
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ── Paper grain + vignette overlays ─────────────────────────── */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9000;
+    opacity: 0.5;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 8999;
+    background: radial-gradient(120% 90% at 50% 0%, transparent 55%, rgba(40,30,15,0.10) 100%);
+  }
+
+  .sheet {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 72px) clamp(20px, 5vw, 56px) 120px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Masthead ────────────────────────────────────────────────── */
+  .masthead { position: relative; }
+
+  .classmark {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding-bottom: 14px;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .classmark .right { color: var(--signal-deep); font-weight: 700; }
+
+  .title-block {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 18px 0 10px;
+    flex-wrap: wrap;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 0.86;
+    letter-spacing: -0.015em;
+    font-size: clamp(48px, 11vw, 132px);
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--signal);
+  }
+  .title-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    padding-bottom: 12px;
+  }
+  .run-select-label {
+    font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-faint);
+  }
+  .run-select-wrap { position: relative; display: inline-block; }
+  .run-select-wrap::after {
+    content: "▾"; position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+    pointer-events: none; color: var(--signal-deep); font-size: 10px;
+  }
+  .run-picker {
+    appearance: none; -webkit-appearance: none;
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.01em;
+    color: var(--ink); background: var(--paper-2);
+    border: 1px solid var(--ink); border-radius: 1px;
+    padding: 8px 30px 8px 11px; max-width: 340px; cursor: pointer;
+    transition: border-color 0.2s var(--ease);
+  }
+  .run-picker:hover { border-color: var(--signal); }
+  .run-meta-lines {
+    margin-top: 8px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+    font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); line-height: 1.7;
+  }
+  .run-meta-lines b { color: var(--ink-soft); font-weight: 500; }
+  .run-meta-lines .run-ref { font-family: var(--font-mono); text-transform: none; letter-spacing: 0; }
+
+  .brief {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1.5px solid var(--ink);
+    border-bottom: 1px solid var(--line);
+    margin-top: 6px;
+  }
+  .brief .cell {
+    padding: 16px 18px 14px 0;
+    border-right: 1px solid var(--line);
+  }
+  .brief .cell:last-child { border-right: none; }
+  .brief .k {
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: 8px;
+  }
+  .brief .v {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 4vw, 40px);
+    line-height: 1;
+  }
+  .brief .v small {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0;
+  }
+  .brief .spec { font-family: var(--font-quote); font-style: italic; font-size: 19px; line-height: 1.25; }
+
+  /* ── Controls ────────────────────────────────────────────────── */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 30px 0 8px;
+    flex-wrap: wrap;
+  }
+  .controls .lbl {
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-right: 6px;
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 1px solid var(--line);
+    padding: 7px 13px;
+    cursor: pointer;
+    transition: all 0.25s var(--ease);
+    border-radius: 1px;
+  }
+  .chip:hover { border-color: var(--ink); color: var(--ink); }
+  .chip[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .controls .count { margin-left: auto; font-size: 11px; color: var(--ink-faint); letter-spacing: 0.1em; }
+  .controls .count b { color: var(--signal-deep); }
+
+  /* ── Filter bar ──────────────────────────────────────────────── */
+  .filter-bar { display:flex; flex-wrap:wrap; align-items:center; gap:14px 18px; padding:14px 16px; margin-bottom:18px;
+    background:var(--paper-2); border:1px solid var(--line); border-left:3px solid var(--signal); }
+  .filter-bar[hidden] { display:none; }
+  .fgroup { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .fgroup-skills { flex:1 1 100%; }
+  .flbl { font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-faint); margin-right:2px; }
+  .filter-bar select, .filter-bar input { font-family:var(--font-mono); font-size:11px; padding:5px 8px; background:var(--paper); border:1px solid var(--line); color:var(--ink); }
+  .filter-bar input { min-width:130px; }
+  .fchip { font-family:var(--font-mono); font-size:10.5px; letter-spacing:.04em; padding:5px 10px; border:1px solid var(--line); background:transparent; color:var(--ink-soft); cursor:pointer; transition:all .18s var(--ease); border-radius:1px; }
+  .fchip:hover { border-color:var(--ink); color:var(--ink); }
+  .fchip.on { background:var(--signal); color:var(--paper); border-color:var(--signal); }
+  .fclear { margin-left:auto; font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); background:none; border:none; cursor:pointer; }
+  .fclear:hover { color:var(--signal); }
+  .empty { padding:48px 0; text-align:center; color:var(--ink-faint); font-family:var(--font-mono); font-size:13px; }
+  .empty button { font-family:var(--font-mono); font-size:12px; color:var(--signal); background:none; border:none; cursor:pointer; text-decoration:underline; }
+
+  /* ── Candidate meta + skills + contacts ──────────────────────── */
+  .profile-link { display:inline-block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--signal-deep); text-decoration:none; margin:8px 0 4px; border-bottom:1px solid var(--line); padding-bottom:1px; transition:color .15s var(--ease); }
+  .profile-link:hover { color:var(--signal); border-color:var(--signal); }
+  .cmeta { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:2px 0 14px; }
+  .cmeta-x { font-family:var(--font-mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); border:1px solid var(--line); padding:3px 7px; }
+  .cmeta-sen { color:var(--signal-deep); border-color:var(--signal-deep); }
+  .skill { font-family:var(--font-mono); font-size:10px; letter-spacing:.02em; padding:3px 8px; border:1px solid var(--line-soft); background:var(--paper-2); color:var(--ink-soft); cursor:pointer; transition:all .15s var(--ease); }
+  .skill:hover { border-color:var(--ink); color:var(--ink); }
+  .skill.on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .contacts { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:0 0 18px; padding:9px 12px; background:var(--paper-2); border:1px dashed var(--line); max-width:52ch; }
+  .contacts-lbl { font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-faint); }
+  .contacts a, .contacts span { font-family:var(--font-mono); font-size:11.5px; color:var(--signal-deep); text-decoration:none; }
+  .contacts a:hover { text-decoration:underline; }
+
+  /* ── Outreach status + send action + modal ───────────────────── */
+  .cmeta-x.st-sent { color:#2f7d32; border-color:#2f7d32; }
+  .cmeta-x.st-failed { color:var(--signal); border-color:var(--signal); }
+  .cmeta-x.st-sending { color:var(--ink-faint); }
+  .m-actions { margin-top:16px; padding-top:12px; border-top:1px solid var(--line); }
+  .send-btn { font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:8px 14px; background:var(--signal); color:var(--paper); border:none; cursor:pointer; transition:background .18s var(--ease); }
+  .send-btn:hover { background:var(--signal-deep); }
+  .modal-backdrop { position:fixed; inset:0; z-index:10000; background:rgba(20,15,8,.45); display:flex; align-items:center; justify-content:center; padding:24px; }
+  .modal-backdrop[hidden] { display:none; }
+  .modal { background:var(--paper); border:1px solid var(--ink); box-shadow:8px 10px 0 rgba(27,24,19,.12); max-width:560px; width:100%; padding:26px 28px; max-height:90vh; overflow:auto; }
+  .modal-h { font-family:var(--font-display); font-size:30px; line-height:1; margin-bottom:16px; }
+  .modal-row { display:flex; gap:10px; font-size:11.5px; line-height:1.5; color:var(--ink-soft); margin-bottom:8px; }
+  .modal-k { font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-faint); min-width:60px; padding-top:2px; }
+  .modal-v { flex:1; }
+  .modal-field { margin:14px 0; }
+  .modal-flbl { font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:6px; display:flex; justify-content:space-between; }
+  .modal-ct b { color:var(--ink-soft); }
+  .modal-sub { text-transform:none; letter-spacing:0; }
+  .modal-note, .modal-email { width:100%; font-family:var(--font-mono); font-size:12.5px; line-height:1.5; padding:10px 12px; background:var(--paper-2); border:1px solid var(--line); color:var(--ink); resize:vertical; }
+  .modal-note { border-left:3px solid var(--signal); }
+  .modal-warn { margin:14px 0 6px; font-family:var(--font-mono); font-size:11px; color:var(--signal-deep); }
+  .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:12px; }
+  .modal-cancel, .modal-save, .modal-send { font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:9px 16px; cursor:pointer; border:1px solid var(--line); background:transparent; color:var(--ink); }
+  .modal-save:hover, .modal-cancel:hover { border-color:var(--ink); }
+  .modal-send { background:var(--signal); color:var(--paper); border-color:var(--signal); font-weight:700; }
+  .modal-send:hover { background:var(--signal-deep); border-color:var(--signal-deep); }
+  .modal-status { margin-top:10px; font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); text-align:right; min-height:14px; }
+
+  /* ── Roster ──────────────────────────────────────────────────── */
+  .roster { border-top: 1.5px solid var(--ink); }
+
+  .entry {
+    display: grid;
+    grid-template-columns: clamp(64px, 12vw, 132px) 1fr clamp(96px, 16vw, 168px);
+    gap: clamp(12px, 2.5vw, 34px);
+    padding: clamp(22px, 3.2vw, 38px) 0 0;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    opacity: 0;
+    transform: translateY(18px);
+    animation: rise 0.7s var(--ease) forwards;
+  }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  .entry::before {
+    content: "";
+    position: absolute;
+    left: 0; top: -1.5px;
+    width: 0; height: 1.5px;
+    background: var(--signal);
+    transition: width 0.5s var(--ease);
+  }
+  .entry:hover::before { width: 100%; }
+
+  .rank {
+    font-family: var(--font-display);
+    font-size: clamp(54px, 9vw, 104px);
+    line-height: 0.8;
+    color: var(--ink);
+    position: relative;
+  }
+  .rank .hash { font-size: 0.32em; vertical-align: super; color: var(--ink-faint); letter-spacing: 0; }
+  .entry:hover .rank { color: var(--signal); }
+
+  .body .name {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4.4vw, 46px);
+    line-height: 0.98;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .body .role {
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .body .role .co { color: var(--ink); font-weight: 500; }
+  .body .loc {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 18px;
+  }
+
+  .hook {
+    font-family: var(--font-quote);
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.4;
+    color: var(--ink);
+    border-left: 2px solid var(--signal);
+    padding-left: 16px;
+    margin-bottom: 20px;
+    max-width: 52ch;
+  }
+
+  /* ── Gate bars ───────────────────────────────────────────────── */
+  .gates { display: grid; gap: 7px; max-width: 440px; margin-bottom: 18px; }
+  .gate { display: grid; grid-template-columns: 90px 1fr 34px; align-items: center; gap: 12px; }
+  .gate .gk {
+    font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint);
+  }
+  .gate .gk i { font-style: normal; color: var(--ink-faint); opacity: 0.6; }
+  .gate .track {
+    height: 7px;
+    background: var(--paper-3);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--line-soft);
+  }
+  .gate .fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: repeating-linear-gradient(90deg, var(--ink) 0 3px, transparent 3px 5px);
+    transition: width 0.9s var(--ease);
+  }
+  .gate .gv { font-family: var(--font-mono); font-size: 11px; text-align: right; color: var(--ink-soft); }
+
+  /* ── Score block ─────────────────────────────────────────────── */
+  .score { text-align: right; padding-top: 6px; }
+  .score .num {
+    font-family: var(--font-display);
+    font-size: clamp(58px, 10vw, 108px);
+    line-height: 0.78;
+    letter-spacing: -0.02em;
+  }
+  .score .num.tier-a { color: var(--signal); }
+  .score .num .pct { font-size: 0.26em; color: var(--ink-faint); vertical-align: super; letter-spacing: 0; }
+  .score .label { font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-faint); margin-top: 4px; }
+  .signal-bar { display: flex; gap: 3px; justify-content: flex-end; margin-top: 12px; }
+  .signal-bar span { width: 9px; height: 16px; background: var(--paper-3); border: 1px solid var(--line-soft); }
+  .signal-bar span.on { background: var(--ink); border-color: var(--ink); }
+  .score .num.tier-a ~ .signal-bar span.on { background: var(--signal); border-color: var(--signal); }
+
+  .stamp {
+    position: absolute;
+    top: 20px; right: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--signal);
+    border: 2px solid var(--signal);
+    padding: 5px 10px;
+    transform: rotate(-7deg);
+    opacity: 0.85;
+    pointer-events: none;
+  }
+
+  /* ── Outreach memo (expandable) ──────────────────────────────── */
+  .memo-toggle {
+    grid-column: 2 / 4;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 0 0 26px;
+    transition: color 0.2s;
+    justify-self: start;
+  }
+  .memo-toggle:hover { color: var(--signal); }
+  .memo-toggle .tk {
+    width: 18px; height: 1px; background: currentColor; position: relative;
+  }
+  .memo-toggle .tk::after {
+    content: ""; position: absolute; left: 8px; top: -8px; width: 1px; height: 17px;
+    background: currentColor; transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+  .entry.open .memo-toggle .tk::after { opacity: 0; transform: scaleY(0); }
+
+  .memo {
+    grid-column: 2 / 4;
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.5s var(--ease);
+    margin-bottom: 0;
+  }
+  .entry.open .memo { grid-template-rows: 1fr; }
+  .memo > .inner { overflow: hidden; }
+  .memo .paper-card {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--ink);
+    padding: 22px 24px;
+    margin: 0 0 30px;
+    box-shadow: 4px 5px 0 rgba(27,24,19,0.06);
+  }
+  .memo .m-row { margin-bottom: 18px; }
+  .memo .m-row:last-child { margin-bottom: 0; }
+  .memo .m-k {
+    font-size: 9.5px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--signal-deep);
+    display: flex; align-items: center; gap: 10px; margin-bottom: 9px;
+  }
+  .memo .m-k .ct { font-family: var(--font-mono); color: var(--ink-faint); letter-spacing: 0; }
+  .memo .m-li {
+    font-family: var(--font-mono);
+    font-size: 13px; line-height: 1.65; color: var(--ink);
+    white-space: pre-wrap;
+  }
+  .memo .m-email { font-size: 12.5px; line-height: 1.7; color: var(--ink-soft); }
+
+  /* ── Colophon ────────────────────────────────────────────────── */
+  .colophon {
+    margin-top: 60px;
+    padding-top: 18px;
+    border-top: 1.5px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .colophon .dot { color: var(--signal); }
+
+  /* ── Launch bar + live strip (Task 7) ────────────────────────── */
+  .launch-bar { display:flex; flex-direction:column; gap:0; margin:24px 0 4px; padding-bottom:18px; border-bottom:1px solid var(--line); }
+  .launch-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  #spec-input { flex:1; min-width:260px; font-family:var(--font-mono); font-size:13px; padding:10px 12px; background:var(--paper-2); border:1px solid var(--line); color:var(--ink); }
+  .jd-input { margin-top:10px; width:100%; font-family:var(--font-mono); font-size:12px; line-height:1.5; padding:10px 12px; background:var(--paper-2); border:1px solid var(--line); color:var(--ink); resize:vertical; }
+  .jd-input::placeholder { color:var(--ink-faint); }
+  .toggle-chip { font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; padding:8px 12px; border:1px solid var(--line); background:transparent; color:var(--ink-soft); cursor:pointer; }
+  .toggle-chip[aria-pressed="true"] { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .launch-go { font-family:var(--font-mono); font-weight:700; letter-spacing:.12em; padding:9px 18px; background:var(--signal); color:var(--paper); border:none; cursor:pointer; }
+  .launch-go:disabled { opacity:.4; cursor:default; }
+  .launch-stop { font-family:var(--font-mono); font-weight:700; padding:9px 14px; background:transparent; color:var(--signal); border:2px solid var(--signal); cursor:pointer; }
+  .live-strip { display:grid; grid-template-columns:1fr 220px; gap:18px; margin:14px 0 26px; }
+  .live-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
+  .live-stat { font-family:var(--font-mono); font-size:12px; color:var(--signal-deep); letter-spacing:.08em; }
+  .trace-filters { display:flex; align-items:center; gap:6px; }
+  .trace-filters .tf-lbl { font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-faint); margin-right:2px; }
+  .tf-chip { font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; border:1px solid var(--line); background:transparent; color:var(--ink-faint); cursor:pointer; border-radius:1px; }
+  .tf-chip[aria-pressed="true"] { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .live-log { font-family:var(--font-mono); font-size:11.5px; line-height:1.55; color:var(--ink-soft); height:420px; overflow:auto; background:var(--paper-2); border:1px solid var(--line); padding:10px 12px; white-space:pre-wrap; word-break:break-word; }
+  .live-log .ln { padding:0; }
+  .live-log .ln-thinking { color:var(--ink-faint); font-style:italic; }
+  .live-log .ln-text { color:var(--ink); }
+  .live-log .ln-tool { color:var(--signal-deep); }
+  .live-log .ln-result { color:var(--ink-soft); }
+  .live-log .ln-sub { color:var(--ink-faint); }
+  .live-log .ln-step { color:var(--ink-faint); letter-spacing:.18em; margin-top:7px; opacity:.7; }
+  .live-log .ln-todos { color:var(--signal-deep); }
+  .live-log .ln-sys { color:var(--ink); font-weight:700; }
+  .live-log.hide-thinking .ln-thinking { display:none; }
+  .live-log.hide-tools .ln-tool { display:none; }
+  .live-log.hide-results .ln-result { display:none; }
+  .live-log.hide-text .ln-text { display:none; }
+  .steer-row { display:flex; gap:8px; margin-top:10px; }
+  .steer-row input { flex:1; font-family:var(--font-mono); font-size:12px; padding:8px 10px; background:var(--paper-2); border:1px solid var(--line); color:var(--ink); }
+  .steer-row button { font-family:var(--font-mono); font-size:11px; padding:8px 12px; border:1px solid var(--line); background:transparent; color:var(--ink); cursor:pointer; }
+  .plan-panel { font-family:var(--font-mono); font-size:11.5px; background:var(--paper-2); border:1px solid var(--line); padding:12px; }
+  .plan-h { letter-spacing:.24em; color:var(--ink-faint); font-size:10px; margin-bottom:8px; }
+  .plan-item { line-height:1.7; }
+  @media (max-width:720px){ .live-strip{ grid-template-columns:1fr; } }
+
+  @media (max-width: 720px) {
+    .brief { grid-template-columns: repeat(2, 1fr); }
+    .brief .cell:nth-child(2) { border-right: none; }
+    .entry { grid-template-columns: 52px 1fr; }
+    .score { grid-column: 1 / 3; text-align: left; display: flex; align-items: flex-end; gap: 18px; padding-top: 14px; }
+    .score .num { font-size: 64px; }
+    .signal-bar { justify-content: flex-start; }
+    .memo-toggle, .memo { grid-column: 1 / 3; }
+    .title-meta { align-items: flex-start; }
+    .run-meta-lines { align-items: flex-start; }
+    .run-picker { max-width: 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .entry { animation: none; opacity: 1; transform: none; }
+    * { transition-duration: 0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+  <main class="sheet">
+    <header class="masthead">
+      <div class="classmark">
+        <span>Talent Intelligence Division &nbsp;//&nbsp; Field Dossier</span>
+        <span class="right">● Draft Mode — Human Review Required</span>
+      </div>
+
+      <div class="title-block">
+        <h1>Short<em>list</em>.</h1>
+        <div class="title-meta">
+          <label class="run-select-label" for="run-picker">Case File</label>
+          <span class="run-select-wrap"><select id="run-picker" class="run-picker"></select></span>
+          <div class="run-meta-lines">
+            <span>Ref <b id="m-run" class="run-ref">—</b></span>
+            <span>Filed <b id="m-date">—</b></span>
+            <span>Engine <b>Kimi K2.6</b></span>
+          </div>
+        </div>
+      </div>
+
+      <section class="brief">
+        <div class="cell">
+          <span class="k">Mandate</span>
+          <span class="v spec" id="m-spec">Senior ML Engineer · Python · PyTorch · London</span>
+        </div>
+        <div class="cell">
+          <span class="k">Discovered</span>
+          <span class="v" id="m-disc">24 <small>profiles</small></span>
+        </div>
+        <div class="cell">
+          <span class="k">Cleared ≥ 60</span>
+          <span class="v" id="m-scored">6 <small>scored</small></span>
+        </div>
+        <div class="cell">
+          <span class="k">Elapsed</span>
+          <span class="v" id="m-elapsed">7<small>m 04s</small></span>
+        </div>
+      </section>
+    </header>
+
+    <section class="launch-bar">
+      <div class="launch-row">
+        <input id="spec-input" autocomplete="off" placeholder="Role title — e.g. Senior ML Engineer · London" />
+        <button class="toggle-chip" id="tg-thinking" aria-pressed="true">thinking</button>
+        <button class="toggle-chip" id="tg-notion" aria-pressed="true">notion</button>
+        <button class="toggle-chip" id="tg-telegram" aria-pressed="true">telegram</button>
+        <button class="launch-go" id="launch-btn">▶ LAUNCH</button>
+        <button class="launch-stop" id="stop-btn" style="display:none">■ STOP</button>
+      </div>
+      <textarea id="jd-input" class="jd-input" rows="3"
+        placeholder="Optional — paste the full job description for sharper matching &amp; scoring (must-haves, nice-to-haves, years, location)…"></textarea>
+    </section>
+
+    <section class="live-strip">
+      <div class="live-main">
+        <div class="live-head">
+          <div id="live-stat" class="live-stat">idle</div>
+          <div class="trace-filters">
+            <span class="tf-lbl">show</span>
+            <button class="tf-chip" data-cat="thinking" aria-pressed="true">reasoning</button>
+            <button class="tf-chip" data-cat="tools" aria-pressed="true">tools</button>
+            <button class="tf-chip" data-cat="results" aria-pressed="true">results</button>
+            <button class="tf-chip" data-cat="text" aria-pressed="true">text</button>
+          </div>
+        </div>
+        <div id="live-log" class="live-log"></div>
+        <div class="steer-row">
+          <input id="steer-input" placeholder="steer the agent — e.g. only London, skip recruiters" />
+          <button id="steer-btn">↑ steer</button>
+          <button id="replay-btn">⏮ replay</button>
+        </div>
+      </div>
+      <aside id="plan-panel" class="plan-panel"></aside>
+    </section>
+
+    <nav class="controls" aria-label="Sort and filter">
+      <span class="lbl">Sort</span>
+      <button class="chip" data-sort="score" aria-pressed="true">By Fit</button>
+      <button class="chip" data-sort="name" aria-pressed="false">A–Z</button>
+      <span class="lbl" style="margin-left:14px">Cut</span>
+      <button class="chip" data-cut="0" aria-pressed="true">All</button>
+      <button class="chip" data-cut="85" aria-pressed="false">≥ 85 only</button>
+      <span class="count"><b id="c-shown">0</b> / <span id="c-total">0</span> dossiers</span>
+    </nav>
+
+    <section class="filter-bar" id="filter-bar" hidden></section>
+
+    <section class="roster" id="roster"></section>
+
+    <footer class="colophon">
+      <span>Talent Intelligence Agent <span class="dot">●</span> Zero Vellum Dependency</span>
+      <span>Sourced via WebBridge <span class="dot">●</span> Delivered to Notion + Telegram</span>
+    </footer>
+  </main>
+
+  <div class="modal-backdrop" id="send-modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-h">Edit &amp; send outreach</div>
+      <div class="modal-row"><span class="modal-k">To</span><span id="sm-name" class="modal-v"></span></div>
+      <div class="modal-row"><span class="modal-k">Method</span><span class="modal-v">connection request + note · agent picks the best available (message / InMail if connected)</span></div>
+      <div class="modal-field">
+        <div class="modal-flbl">LinkedIn note <span class="modal-ct"><b id="sm-count">0</b> / 300</span></div>
+        <textarea id="sm-note" class="modal-note" rows="4"></textarea>
+      </div>
+      <div class="modal-field">
+        <div class="modal-flbl">Email body <span class="modal-sub">(saved with draft; not sent here)</span></div>
+        <textarea id="sm-email" class="modal-email" rows="4"></textarea>
+      </div>
+      <div class="modal-warn">⚠ Sending fires a real LinkedIn request from your account via your browser. This can't be undone.</div>
+      <div class="modal-actions">
+        <button id="sm-cancel" class="modal-cancel">Cancel</button>
+        <button id="sm-save" class="modal-save">Save draft</button>
+        <button id="sm-send" class="modal-send">Confirm &amp; send ➤</button>
+      </div>
+      <div id="sm-status" class="modal-status"></div>
+    </div>
+  </div>
+
+<script>
+  // ── Gate weight labels (Skills→35, Seniority→25, Location→20, Recency→10, Standout→10) ──
+  const GATE_WEIGHT = { Skills: 35, Seniority: 25, Location: 20, Recency: 10, Standout: 10 };
+  const roster = document.getElementById("roster");
+
+  // ── App state: data source is the API + WS (no embedded run data) ──
+  const STATE = {
+    runId: null, candidates: [], sortKey: "score", cut: 0, meta: null,
+    filters: { loc: "", seniority: new Set(), skills: new Set(), role: "", minYears: 0 },
+  };
+  const SENIORITY_ORDER = ["Junior", "Mid", "Senior", "Staff", "Lead"];
+  function toggleSet(set, v) { set.has(v) ? set.delete(v) : set.add(v); }
+  function toggleSkill(s) { toggleSet(STATE.filters.skills, s.toLowerCase()); populateFilters(); render(); }
+
+  // Candidate fields are scraped from LinkedIn (untrusted) — escape before innerHTML.
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, ch =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  }
+
+  function tier(s) { return typeof s === "number" && s >= 88 ? "tier-a" : ""; }
+  function bars(s) {
+    const on = Math.round((typeof s === "number" ? s : 0) / 10);
+    return Array.from({ length: 10 }, (_, i) =>
+      `<span class="${i < on ? "on" : ""}"></span>`).join("");
+  }
+  function gateRows(g) {
+    return Object.entries(g).map(([k, v]) => `
+      <div class="gate">
+        <span class="gk">${k} <i>${GATE_WEIGHT[k] ?? ""}%</i></span>
+        <span class="track"><span class="fill" data-w="${v}"></span></span>
+        <span class="gv">${v}</span>
+      </div>`).join("");
+  }
+
+  function outreachBadge(s) {
+    if (s === "sent") return `<span class="cmeta-x st-sent">✓ sent</span>`;
+    if (s === "failed") return `<span class="cmeta-x st-failed">✗ send failed</span>`;
+    if (s === "sending") return `<span class="cmeta-x st-sending">… sending</span>`;
+    return "";
+  }
+
+  function contactLink(k, v) {
+    const val = Array.isArray(v) ? v.join(", ") : String(v ?? "");
+    if (!val) return "";
+    if (/mail/i.test(k) || /@/.test(val)) return `<a href="mailto:${esc(val)}">✉ ${esc(val)}</a>`;
+    if (/phone|tel|mobile/i.test(k)) return `<a href="tel:${esc(val.replace(/\s+/g, ""))}">☎ ${esc(val)}</a>`;
+    if (/web|site|url|github|portfolio|link|twitter|x/i.test(k) || /^https?:|\./.test(val))
+      return `<a href="${esc(val.startsWith("http") ? val : "https://" + val)}" target="_blank" rel="noopener">↗ ${esc(val)}</a>`;
+    return `<span>${esc(k)}: ${esc(val)}</span>`;
+  }
+
+  function entryHTML(c, i) {
+    const isTop = i === 0 && STATE.sortKey === "score";
+    const hasScore = typeof c.score === "number";
+    const gatesBlock = c.gates ? `<div class="gates">${gateRows(c.gates)}</div>` : "";
+    const metaRow = `<div class="cmeta">
+      <span class="cmeta-x cmeta-sen">${esc(c.seniority)}</span>
+      ${c.years != null ? `<span class="cmeta-x">${c.years}y exp</span>` : ""}
+      ${outreachBadge(c.outreachStatus)}
+      ${(c.skills || []).slice(0, 8).map(s => {
+        const on = STATE.filters.skills.has(s.toLowerCase());
+        return `<button class="skill ${on ? "on" : ""}" data-skill="${esc(s)}">${esc(s)}</button>`;
+      }).join("")}
+    </div>`;
+    const contactsBlock = c.contacts ? `<div class="contacts">
+      <span class="contacts-lbl">Contacts</span>
+      ${Object.entries(c.contacts).map(([k, v]) => contactLink(k, v)).filter(Boolean).join("")}
+    </div>` : "";
+    const memoBlock = (c.li || c.email) ? `
+        <button class="memo-toggle" data-i="${i}">
+          <span class="tk"></span> Outreach Draft
+        </button>
+        <div class="memo">
+          <div class="inner">
+            <div class="paper-card">
+              ${c.li ? `<div class="m-row">
+                <div class="m-k">LinkedIn Message <span class="ct">${c.li.length} / 295 chars</span></div>
+                <div class="m-li">${esc(c.li)}</div>
+              </div>` : ""}
+              ${c.email ? `<div class="m-row">
+                <div class="m-k">Email Body</div>
+                <div class="m-li m-email">${esc(c.email)}</div>
+              </div>` : ""}
+              <div class="m-actions">
+                <button class="send-btn" data-send-id="${esc(c.id)}">✦ Edit / Send outreach</button>
+              </div>
+            </div>
+          </div>
+        </div>` : "";
+    return `
+      <article class="entry" style="animation-delay:${i * 90}ms">
+        ${isTop ? '<div class="stamp">Top Signal</div>' : ""}
+        <div class="rank"><span class="hash">#</span>${String(i + 1).padStart(2, "0")}</div>
+        <div class="body">
+          <div class="name">${esc(c.name)}</div>
+          <div class="role">${esc(c.role)} · <span class="co">${esc(c.company)}</span></div>
+          <div class="loc">${esc(c.loc)}</div>
+          ${c.url ? `<a class="profile-link" href="${esc(c.url)}" target="_blank" rel="noopener">View LinkedIn profile ↗</a>` : ""}
+          ${metaRow}
+          <p class="hook">${esc(c.hook)}</p>
+          ${contactsBlock}
+          ${gatesBlock}
+        </div>
+        <div class="score">
+          <div class="num ${tier(c.score)}">${hasScore ? c.score : "—"}${hasScore ? '<span class="pct">%</span>' : ""}</div>
+          <div class="label">Fit Index</div>
+          <div class="signal-bar">${bars(c.score)}</div>
+        </div>
+        ${memoBlock}
+      </article>`;
+  }
+
+  function applyFilters(cands) {
+    const f = STATE.filters;
+    let list = cands.filter(c => (c.score ?? 0) >= STATE.cut);
+    if (f.loc) list = list.filter(c => c.loc === f.loc);
+    if (f.seniority.size) list = list.filter(c => f.seniority.has(c.seniority));
+    if (f.minYears) list = list.filter(c => (c.years ?? 0) >= f.minYears);
+    if (f.role) { const q = f.role.toLowerCase(); list = list.filter(c => (c.role || "").toLowerCase().includes(q)); }
+    if (f.skills.size) list = list.filter(c => {
+      const cs = new Set((c.skills || []).map(s => s.toLowerCase()));
+      return [...f.skills].every(s => cs.has(s));   // candidate must have ALL selected skills
+    });
+    return list;
+  }
+
+  function render() {
+    const list = applyFilters(STATE.candidates)
+      .sort((a, b) => STATE.sortKey === "score" ? (b.score ?? 0) - (a.score ?? 0) : a.name.localeCompare(b.name));
+
+    document.getElementById("c-shown").textContent = list.length;
+    document.getElementById("c-total").textContent = STATE.candidates.length;
+
+    roster.innerHTML = list.length
+      ? list.map((c, i) => entryHTML(c, i)).join("")
+      : `<div class="empty">No candidates match these filters. <button id="clear-empty">clear filters</button></div>`;
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      roster.querySelectorAll(".fill").forEach(f => { f.style.width = f.dataset.w + "%"; });
+    }));
+    roster.querySelectorAll(".memo-toggle").forEach(btn =>
+      btn.addEventListener("click", () => btn.closest(".entry").classList.toggle("open")));
+    roster.querySelectorAll(".skill").forEach(btn =>
+      btn.addEventListener("click", () => toggleSkill(btn.dataset.skill)));
+    roster.querySelectorAll(".send-btn").forEach(btn =>
+      btn.addEventListener("click", () => {
+        const c = STATE.candidates.find(x => x.id === btn.dataset.sendId);
+        if (c) openSendModal(c);
+      }));
+    const ce = document.getElementById("clear-empty");
+    if (ce) ce.onclick = clearFilters;
+  }
+
+  function clearFilters() {
+    STATE.filters = { loc: "", seniority: new Set(), skills: new Set(), role: "", minYears: 0 };
+    populateFilters(); render();
+  }
+
+  function distinct(arr) { return [...new Set(arr.filter(Boolean))]; }
+
+  function populateFilters() {
+    const bar = document.getElementById("filter-bar");
+    const cands = STATE.candidates;
+    if (!cands.length) { bar.hidden = true; return; }
+    bar.hidden = false;
+    const f = STATE.filters;
+    const locs = distinct(cands.map(c => c.loc)).sort();
+    const senis = SENIORITY_ORDER.filter(s => cands.some(c => c.seniority === s));
+    const freq = {};
+    cands.forEach(c => (c.skills || []).forEach(s => { const k = s.toLowerCase(); freq[k] = (freq[k] || 0) + 1; }));
+    const topSkills = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 14).map(x => x[0]);
+
+    bar.innerHTML = `
+      <div class="fgroup"><span class="flbl">Location</span>
+        <select id="f-loc"><option value="">All</option>${locs.map(l => `<option ${f.loc === l ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div>
+      <div class="fgroup"><span class="flbl">Seniority</span>
+        ${senis.map(s => `<button class="fchip ${f.seniority.has(s) ? "on" : ""}" data-sen="${s}">${s}</button>`).join("")}</div>
+      <div class="fgroup"><span class="flbl">Min yrs</span>
+        <select id="f-years">${[0, 2, 5, 8, 10].map(y => `<option value="${y}" ${f.minYears === y ? "selected" : ""}>${y ? y + "+" : "Any"}</option>`).join("")}</select></div>
+      <div class="fgroup"><span class="flbl">Role</span>
+        <input id="f-role" placeholder="contains…" value="${esc(f.role)}" /></div>
+      <div class="fgroup fgroup-skills"><span class="flbl">Skills</span>
+        ${topSkills.map(s => `<button class="fchip ${f.skills.has(s) ? "on" : ""}" data-skill="${esc(s)}">${esc(s)}</button>`).join("")}</div>
+      <button class="fclear" id="f-clear">✕ clear</button>`;
+
+    bar.querySelector("#f-loc").onchange = e => { f.loc = e.target.value; render(); };
+    bar.querySelector("#f-years").onchange = e => { f.minYears = Number(e.target.value); render(); };
+    const role = bar.querySelector("#f-role");
+    role.oninput = e => { f.role = e.target.value; render(); };  // no re-populate → keeps focus
+    bar.querySelectorAll(".fchip[data-sen]").forEach(b => b.onclick = () => { toggleSet(f.seniority, b.dataset.sen); populateFilters(); render(); });
+    bar.querySelectorAll(".fchip[data-skill]").forEach(b => b.onclick = () => toggleSkill(b.dataset.skill));
+    bar.querySelector("#f-clear").onclick = clearFilters;
+  }
+
+  document.querySelectorAll(".chip[data-sort]").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".chip[data-sort]").forEach(c => c.setAttribute("aria-pressed", "false"));
+      chip.setAttribute("aria-pressed", "true");
+      STATE.sortKey = chip.dataset.sort;
+      render();
+    });
+  });
+  document.querySelectorAll(".chip[data-cut]").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".chip[data-cut]").forEach(c => c.setAttribute("aria-pressed", "false"));
+      chip.setAttribute("aria-pressed", "true");
+      STATE.cut = Number(chip.dataset.cut);
+      render();
+    });
+  });
+
+  // ── API + WebSocket client ────────────────────────────────────
+  const API = location.origin;
+  let ws = null;
+
+  async function boot() {
+    try {
+      const runs = await (await fetch(`${API}/api/runs`)).json();
+      populatePicker(runs);
+      if (runs.length) await loadRun(runs[0].runId);
+    } catch (e) {
+      console.warn("API unreachable, offline mode", e);
+    }
+    openWs();
+    wireControls();
+  }
+
+  // Readable run label (role · count · date) — never the raw timestamp id.
+  function runLabel(run) {
+    const role = String(run.prompt || run.runId).replace(/\s+/g, " ").trim();
+    const short = role.length > 44 ? role.slice(0, 44) + "…" : role;
+    const d = run.startedAt
+      ? new Date(run.startedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
+      : "";
+    return `${short}  ·  ${run.candidateCount} cand${d ? "  ·  " + d : ""}`;
+  }
+
+  function populatePicker(runs) {
+    const sel = document.getElementById("run-picker");
+    sel.innerHTML = runs.map(r =>
+      `<option value="${esc(r.runId)}">${esc(runLabel(r))}</option>`).join("");
+    sel.onchange = () => loadRun(sel.value);
+  }
+
+  async function loadRun(runId) {
+    const view = await (await fetch(`${API}/api/runs/${runId}`)).json();
+    const switching = STATE.runId !== runId;
+    STATE.runId = runId;
+    STATE.meta = view.run;
+    STATE.candidates = view.candidates;
+    if (switching) STATE.filters = { loc: "", seniority: new Set(), skills: new Set(), role: "", minYears: 0 };
+    const picker = document.getElementById("run-picker");
+    if (picker) picker.value = runId;
+    hydrateMasthead(view.run, view.candidates);
+    populateFilters();
+    render();
+  }
+
+  function fmtDate(ms) {
+    if (!ms) return "—";
+    return new Date(ms).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+  }
+  function fmtElapsed(run) {
+    if (!run.startedAt || !run.finishedAt) return { m: "—", s: "" };
+    const total = Math.max(0, Math.round((run.finishedAt - run.startedAt) / 1000));
+    const m = Math.floor(total / 60), s = total % 60;
+    return { m: String(m), s: "m " + String(s).padStart(2, "0") + "s" };
+  }
+
+  function hydrateMasthead(run, candidates) {
+    document.getElementById("m-run").textContent = run.runId;
+    document.getElementById("m-spec").textContent = run.prompt;
+    document.getElementById("m-scored").innerHTML =
+      `${candidates.filter(c => (c.score ?? 0) >= 60).length} <small>scored</small>`;
+    document.getElementById("m-disc").innerHTML = `${candidates.length} <small>profiles</small>`;
+    document.getElementById("m-date").textContent = fmtDate(run.startedAt);
+    const el = fmtElapsed(run);
+    document.getElementById("m-elapsed").innerHTML = `${el.m}<small>${el.s}</small>`;
+  }
+
+  // ── Edit / Send outreach modal ───────────────────────────────────────────
+  let sendCand = null;
+  function openSendModal(c) {
+    sendCand = c;
+    document.getElementById("sm-name").textContent = c.name + (c.role ? " · " + c.role : "");
+    document.getElementById("sm-note").value = c.li || "";
+    document.getElementById("sm-email").value = c.email || "";
+    document.getElementById("sm-status").textContent = "";
+    updateSmCount();
+    document.getElementById("send-modal").hidden = false;
+    document.getElementById("sm-note").focus();
+  }
+  function closeSendModal() { document.getElementById("send-modal").hidden = true; sendCand = null; }
+  function updateSmCount() {
+    const n = document.getElementById("sm-note").value.length;
+    const el = document.getElementById("sm-count");
+    el.textContent = n;
+    el.style.color = n > 300 ? "var(--signal)" : "";
+  }
+  async function persistDraft() {
+    return fetch(`${API}/api/runs/${STATE.runId}/candidate/${sendCand.id}/outreach`, {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        linkedinMessage: document.getElementById("sm-note").value,
+        emailBody: document.getElementById("sm-email").value,
+      }),
+    });
+  }
+  async function saveDraft() {
+    if (!sendCand) return;
+    const st = document.getElementById("sm-status"); st.textContent = "saving…";
+    try {
+      const res = await persistDraft();
+      if (!res.ok) { st.textContent = "✗ " + ((await res.json()).error || "save failed"); return; }
+      st.textContent = "✓ draft saved";
+      await loadRun(STATE.runId);
+    } catch (e) { st.textContent = "✗ " + e; }
+  }
+  async function confirmSend() {
+    if (!sendCand) return;
+    const note = document.getElementById("sm-note").value.trim();
+    const st = document.getElementById("sm-status");
+    if (!note) { st.textContent = "✗ note is empty"; return; }
+    if (note.length > 300 && !confirm("Note exceeds 300 chars; the agent will trim the end. Send anyway?")) return;
+    st.textContent = "sending…";
+    try {
+      await persistDraft();   // keep DB in sync with any edits (note + email)
+      const res = await fetch(`${API}/api/runs/${STATE.runId}/send`, {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ candidateId: sendCand.id, note }),
+      });
+      const data = await res.json();
+      if (!res.ok) { st.textContent = "✗ " + (data.error || "send failed"); return; }
+      const name = sendCand.name;
+      closeSendModal();
+      pushConsole(`➤ sending outreach to ${name}…`);
+      await loadRun(STATE.runId);
+    } catch (e) { st.textContent = "✗ " + e; }
+  }
+
+  function openWs() {
+    ws = new WebSocket(`ws://${location.host}/ws`);
+    ws.onmessage = (ev) => handleEvent(JSON.parse(ev.data));
+    ws.onclose = () => setTimeout(openWs, 1500);   // auto-reconnect; DB is source of truth
+  }
+
+  let liveStep = 0, liveTokens = 0, liveCtx = 0, lastInterruptAt = 0, replaying = false;
+
+  // ── Verbose activity transcript ──────────────────────────────────────────
+  // Every event the agent emits is rendered as a typed line. Consecutive
+  // thinking/text deltas are coalesced into one growing line so the ~10k
+  // reasoning deltas per run don't create 10k DOM nodes. Filter chips mute
+  // categories via classes on the log container.
+  let lastLineEl = null, lastLineType = null;
+  function transcriptLine(type, text, full) {
+    const log = document.getElementById("live-log");
+    const div = document.createElement("div");
+    div.className = "ln ln-" + type;
+    div.textContent = text;
+    if (full) div.title = full;             // full content on hover (tool I/O)
+    log.appendChild(div);
+    while (log.children.length > 5000) log.removeChild(log.firstChild);  // cap DOM
+    log.scrollTop = log.scrollHeight;
+    lastLineEl = div; lastLineType = type;
+    return div;
+  }
+  function appendDelta(type, delta) {
+    if (lastLineType === type && lastLineEl) {
+      lastLineEl.textContent += delta;
+      document.getElementById("live-log").scrollTop = 1e9;
+    } else {
+      transcriptLine(type, (type === "thinking" ? "∵ " : "› ") + delta);
+    }
+  }
+  function clearTranscript() {
+    document.getElementById("live-log").innerHTML = "";
+    lastLineEl = null; lastLineType = null;
+  }
+  function pushConsole(line) { transcriptLine("sys", line); }  // system/status lines
+  function fmtJSON(v) { try { return JSON.stringify(v); } catch { return String(v); } }
+  function clip(s, n) { s = String(s ?? ""); return s.length > n ? s.slice(0, n) + "…" : s; }
+  function urlHost(u) { try { const x = new URL(u); return x.host.replace(/^www\./, "") + x.pathname.replace(/\/$/, ""); } catch { return String(u || ""); } }
+
+  // Human-readable, per-tool summaries instead of raw JSON dumps.
+  function fmtToolCall(name, input) {
+    const i = input || {};
+    switch (name) {
+      case "SearchWeb": return `search · "${clip(i.query ?? i.q ?? "", 72)}"`;
+      case "webbridge_navigate": return `navigate → ${clip(urlHost(i.url), 72)}`;
+      case "webbridge_snapshot": return `read page (snapshot)`;
+      case "webbridge_evaluate": return `evaluate JS on page`;
+      case "webbridge_click": return `click · ${clip(i.selector ?? "", 48)}`;
+      case "store_candidate": return `store · ${i.name ?? urlHost(i.linkedinUrl) ?? ""}${typeof i.fitScore === "number" ? `  (${i.fitScore})` : ""}`;
+      case "save_to_notion": return `notion ← ${i.name ?? ""}`;
+      case "notify_recruiter": return `telegram ← ${Array.isArray(i.candidates) ? i.candidates.length + " candidates" : "shortlist"}`;
+      case "SetTodoList": return `update plan`;
+      case "Shell": return `shell · ${clip(i.command ?? "", 60)}`;
+      default: return clip(fmtJSON(i).replace(/\s+/g, " "), 90);
+    }
+  }
+  function fmtToolResult(output) {
+    const raw = String(output ?? "");
+    let j; try { j = JSON.parse(raw); } catch { /* not json */ }
+    if (j && typeof j === "object") {
+      if (j.authwalled) return "authwall — skipped";
+      if (j.title || j.url) return clip([j.title, j.url && urlHost(j.url)].filter(Boolean).join(" · "), 100);
+      if (typeof j.sent === "number") return `sent ${j.sent} message(s)`;
+      if (j.pageId) return "notion page created";
+      if (j.status) return String(j.status);
+      if (j.ok) return "ok";
+    }
+    return clip(raw.replace(/\s+/g, " ").trim(), 120) || "(empty)";
+  }
+
+  function handleEvent(e) {
+    switch (e.type) {
+      case "hello":
+        // A run was already in flight when this page loaded — adopt it.
+        if (e.activeRunId) { STATE.runId = e.activeRunId; setLaunching(true); loadRun(e.activeRunId); }
+        break;
+      case "step": liveStep = e.n; updateConsole(); transcriptLine("step", `── step ${e.n} ──`); break;
+      case "status":
+        if (e.tokens) liveTokens = e.tokens.total;
+        if (typeof e.contextUsage === "number") liveCtx = e.contextUsage;
+        updateConsole(); break;
+      case "thinking": appendDelta("thinking", e.delta); break;
+      case "text": appendDelta("text", e.delta); break;
+      case "tool_call":
+        transcriptLine("tool", `▸ ${fmtToolCall(e.name, e.input)}`, `${e.name}\n${fmtJSON(e.input)}`);
+        break;
+      case "tool_result":
+        transcriptLine("result", `↳ ${fmtToolResult(e.output)}`, String(e.output ?? ""));
+        break;
+      case "subagent": transcriptLine("sub", `  └ subagent · ${describeInner(e.inner)}`); break;
+      case "todos": {
+        renderTodos(e.items);
+        const done = e.items.filter(t => t.status === "done").length;
+        transcriptLine("todos", `▤ plan · ${done}/${e.items.length} done`);
+        break;
+      }
+      case "interrupted": {
+        const now = Date.now();
+        if (now - lastInterruptAt > 500) { transcriptLine("sys", "■ interrupted"); lastInterruptAt = now; }
+        break;
+      }
+      case "steer_echo": transcriptLine("sys", `↳ steer: ${e.message}`); break;
+      case "candidates_updated": if (!replaying && (e.runId === STATE.runId || !STATE.runId)) loadRun(e.runId); break;
+      case "done": transcriptLine("sys", "✓ done"); setLaunching(false); if (e.runId) loadRun(e.runId); break;
+      case "error": transcriptLine("sys", `✗ ${e.message}`); setLaunching(false); break;
+      case "outreach_done":
+        transcriptLine("sys", `${e.ok ? "✓ outreach sent" : "✗ outreach failed"}${e.message ? " · " + e.message : ""}`);
+        if (e.runId) loadRun(e.runId);
+        break;
+    }
+  }
+
+  function describeInner(inner) {
+    if (!inner) return "…";
+    if (inner.type === "tool_call") return `tool ${inner.name} ${clip(fmtJSON(inner.input), 80)}`;
+    if (inner.type === "step") return `step ${inner.n}`;
+    if (inner.type === "text") return clip(inner.delta, 80);
+    if (inner.type === "thinking") return "∵ " + clip(inner.delta, 80);
+    return inner.type;
+  }
+
+  function updateConsole() {
+    document.getElementById("live-stat").textContent =
+      `step ${liveStep} · ${Math.round(liveTokens / 1000)}k tok · ctx ${Math.round((liveCtx || 0) * 100)}%`;
+  }
+  function renderTodos(items) {
+    const mark = { done: "☑", in_progress: "▣", pending: "☐" };
+    document.getElementById("plan-panel").innerHTML =
+      "<div class='plan-h'>PLAN</div>" +
+      items.map(t => `<div class="plan-item">${mark[t.status] || "☐"} ${esc(t.title)}</div>`).join("");
+  }
+
+  async function launchRun() {
+    const spec = document.getElementById("spec-input").value.trim();
+    if (!spec) return;
+    const jd = document.getElementById("jd-input").value.trim();
+    const body = {
+      spec,
+      jd: jd || undefined,
+      thinking: document.getElementById("tg-thinking").getAttribute("aria-pressed") === "true",
+      notion: document.getElementById("tg-notion").getAttribute("aria-pressed") === "true",
+      telegram: document.getElementById("tg-telegram").getAttribute("aria-pressed") === "true",
+    };
+    if (!confirm(`Launch run — Notion ${body.notion ? "ON" : "off"}, Telegram ${body.telegram ? "ON" : "off"}. Continue?`)) return;
+    setLaunching(true);
+    clearTranscript();
+    try {
+      const res = await fetch(`${API}/api/runs`, {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) { pushConsole(`✗ ${data.error}`); setLaunching(false); return; }
+      STATE.runId = data.runId;
+    } catch (err) {
+      pushConsole(`✗ network error: ${err}`); setLaunching(false);
+    }
+  }
+
+  async function stopRun() {
+    if (!STATE.runId) return;
+    try { await fetch(`${API}/api/runs/${STATE.runId}/interrupt`, { method: "POST" }); }
+    catch (err) { pushConsole(`✗ stop failed: ${err}`); }
+  }
+  async function steerRun() {
+    const input = document.getElementById("steer-input");
+    const message = input.value.trim();
+    if (!message || !STATE.runId) return;
+    try {
+      await fetch(`${API}/api/runs/${STATE.runId}/steer`, {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message }),
+      });
+      input.value = "";
+    } catch (err) { pushConsole(`✗ steer failed: ${err}`); }
+  }
+  async function replayRun() {
+    if (!STATE.runId || replaying) return;
+    let data;
+    try {
+      const res = await fetch(`${API}/api/runs/${STATE.runId}/replay`);
+      data = await res.json();
+      if (!res.ok) { pushConsole(`✗ replay: ${data.error}`); return; }
+    } catch (err) { pushConsole(`✗ replay failed: ${err}`); return; }
+    clearTranscript();
+    replaying = true;
+    try {
+      for (const e of data.events) { handleEvent(e); await new Promise(r => setTimeout(r, 40)); }
+    } finally { replaying = false; }
+  }
+
+  function setLaunching(on) {
+    document.getElementById("launch-btn").disabled = on;
+    document.getElementById("stop-btn").style.display = on ? "" : "none";
+  }
+
+  function wireControls() {
+    document.getElementById("launch-btn").onclick = launchRun;
+    document.getElementById("stop-btn").onclick = stopRun;
+    document.getElementById("steer-btn").onclick = steerRun;
+    document.getElementById("replay-btn").onclick = replayRun;
+    document.querySelectorAll(".toggle-chip").forEach(c =>
+      c.onclick = () => c.setAttribute("aria-pressed", c.getAttribute("aria-pressed") === "true" ? "false" : "true"));
+    // Transcript category filters: toggle a hide-<cat> class on the log container.
+    const logEl = document.getElementById("live-log");
+    document.querySelectorAll(".tf-chip").forEach(c =>
+      c.onclick = () => {
+        const on = c.getAttribute("aria-pressed") === "true";
+        c.setAttribute("aria-pressed", on ? "false" : "true");
+        logEl.classList.toggle("hide-" + c.dataset.cat, on);
+      });
+    // Send/Edit modal
+    document.getElementById("sm-cancel").onclick = closeSendModal;
+    document.getElementById("sm-save").onclick = saveDraft;
+    document.getElementById("sm-send").onclick = confirmSend;
+    document.getElementById("sm-note").addEventListener("input", updateSmCount);
+    document.getElementById("send-modal").addEventListener("click", e => {
+      if (e.target.id === "send-modal") closeSendModal();   // backdrop click closes
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && !document.getElementById("send-modal").hidden) closeSendModal();
+    });
+  }
+
+  boot();
+</script>
+</body>
+</html>

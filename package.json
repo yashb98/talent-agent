@@ -1,0 +1,22 @@
+{
+  "name": "talent-agent",
+  "version": "1.0.0",
+  "description": "AI talent intelligence agent powered by Kimi K2.6. Zero Vellum dependency.",
+  "type": "module",
+  "scripts": {
+    "start": "bun src/index.ts",
+    "talent": "bun src/index.ts talent",
+    "web": "bun src/server.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun --sourcemap",
+    "typecheck": "bunx tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@moonshot-ai/kimi-agent-sdk": "^0.1.8",
+    "@notionhq/client": "^5.22.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}
