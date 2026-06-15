@@ -33,52 +33,9 @@ https://github.com/user-attachments/assets/15ef6d89-bde8-40ea-970b-0fdfd6b9c37a
 
 ## Architecture
 
-```mermaid
-flowchart TB
-    subgraph User
-        A[Job spec / CLI or Web UI]
-        B[Authenticated Chrome<br/>Kimi WebBridge :10086]
-    end
+![Talent Agent Architecture](docs/architecture.png)
 
-    subgraph Agent
-        C[src/index.ts CLI]
-        D[src/server.ts + web/dashboard.html]
-        E[src/core/agent.ts<br/>Kimi SDK wrapper]
-        F[src/skills/talent/index.ts<br/>prompt + tools]
-        G[src/core/memory.ts<br/>bun:sqlite]
-    end
-
-    subgraph Tools
-        H[webbridge_navigate<br/>webbridge_snapshot<br/>webbridge_evaluate]
-        I[store_candidate]
-        J[save_to_notion]
-        K[notify_recruiter]
-        L[SearchWeb]
-    end
-
-    subgraph Outputs
-        M[Notion CRM]
-        N[Telegram]
-        O[Live dossier UI]
-    end
-
-    A --> C
-    A --> D
-    C --> E
-    D --> E
-    E --> F
-    F --> L
-    F --> H
-    H --> B
-    H --> I
-    I --> G
-    F --> J
-    F --> K
-    J --> M
-    K --> N
-    G --> O
-    D --> O
-```
+> Source: [`docs/architecture.html`](./docs/architecture.html) — built with Tailwind CSS. Edit the HTML and re-screenshot to update the diagram.
 
 ### Key modules
 
