@@ -4,9 +4,9 @@ AI talent intelligence agent powered by **Kimi K2.6**. Give it a job spec; it di
 
 ## Demo
 
-[▶ Watch the demo video](https://github.com/yashb98/talent-agent/releases/download/demo-v1.0/talent-agent-demo.mp4)
+https://github.com/user-attachments/assets/15ef6d89-bde8-40ea-970b-0fdfd6b9c37a
 
-> The demo shows a live run from the web UI: entering a job spec, watching the agent plan, scrape LinkedIn profiles, score candidates, and populate the dossier in real time. The video is also available in the repo as [`talent-agent-demo.mp4`](./talent-agent-demo.mp4) and on the [Demo release](https://github.com/yashb98/talent-agent/releases/tag/demo-v1.0).
+> The demo shows a live run from the web UI: entering a job spec, watching the agent plan, scrape LinkedIn profiles, score candidates, and populate the dossier in real time.
 
 ## What it does
 
